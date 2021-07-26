@@ -29,7 +29,6 @@ camBtnEl.addEventListener('click', () => {
         // start the webcam
         startVideo();
         camBtnEl.textContent = 'Close Camera';
-        openCam = true;
         console.log('Open button clicked');
     } else {
         // stop the webcam
@@ -40,7 +39,6 @@ camBtnEl.addEventListener('click', () => {
         })
         video.srcObject = null;
         camBtnEl.textContent = 'Open Camera';
-        openCam = false;
         console.log('Close button clicked');
     }
 });
