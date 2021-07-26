@@ -12,6 +12,8 @@ Promise.all([
     console.log('Models loaded');
 });
 
+console.log('Hello world');
+
 // start video
 async function startVideo() {
     try {
