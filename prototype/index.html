@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Face Detection</title>
+        <style>
+            body {
+               margin: 0px;
+               padding: 0px;
+               width: 100vw;
+               height: 100vh;
+               display: flex;
+               justify-content: center;
+               align-items: center;
+               flex-direction: column;
+            }
+
+            canvas {
+                position : absolute;
+            }
+
+            .button-container {
+                display: flex;
+                margin: 10px;
+                flex-flow: row wrap;
+            }
+
+        </style>
+        <script defer src="face-api.min.js"></script>
+        <script defer src="script.js"></script>
+    </head>
+    <body>
+        <video id="video" width="720" height="480" autoplay muted></video>
+        <div class="button-container">
+            <button id="cam-btn">Open Camera</button>
+            <button id="capture">Capture</button> 
+        </div> 
+    </body>
+</html>
