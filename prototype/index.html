@@ -19,12 +19,21 @@
 
             canvas {
                 position : absolute;
+                z-index: -1;
             }
 
             .button-container {
                 display: flex;
                 margin: 10px;
                 flex-flow: row wrap;
+            }
+
+            button {
+                margin: 5px;
+            }
+
+            button:hover {
+                background-color:red;
             }
 
         </style>
@@ -35,7 +44,11 @@
         <video id="video" width="720" height="480" autoplay muted></video>
         <div class="button-container">
             <button id="cam-btn">Open Camera</button>
-            <button id="capture">Capture</button> 
-        </div> 
+            <button id="cap-btn">Capture</button> 
+        </div>
+        <canvas id="canvas"></canvas>
+        <div class="output">
+            <img id="photo" alt="The screen capture will appear in the box">
+        </div>
     </body>
 </html>
