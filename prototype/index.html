@@ -5,50 +5,21 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>Face Detection</title>
-        <style>
-            body {
-               margin: 0px;
-               padding: 0px;
-               width: 100vw;
-               height: 100vh;
-               display: flex;
-               justify-content: center;
-               align-items: center;
-               flex-direction: column;
-            }
-
-            canvas {
-                position : absolute;
-                z-index: -1;
-            }
-
-            .button-container {
-                display: flex;
-                margin: 10px;
-                flex-flow: row wrap;
-            }
-
-            button {
-                margin: 5px;
-            }
-
-            button:hover {
-                background-color:red;
-            }
-
-        </style>
         <script defer src="face-api.min.js"></script>
         <script defer src="script.js"></script>
+        <link rel="stylesheet" href="main.css" type="text/css" media="all"/>
     </head>
     <body>
-        <video id="video" width="720" height="480" autoplay muted></video>
+        <div class="video-container">
+            <video id="video" width="720" height="560" autoplay muted></video>
+        </div>
         <div class="button-container">
             <button id="cam-btn">Open Camera</button>
             <button id="cap-btn">Capture</button> 
         </div>
-        <canvas id="canvas"></canvas>
-        <div class="output">
+        <!-- <canvas id="img-canvas"></canvas> -->
+        <!-- <div class="output">
             <img id="photo" alt="The screen capture will appear in the box">
-        </div>
+        </div> -->
     </body>
 </html>

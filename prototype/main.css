@@ -1,0 +1,30 @@
+body {
+    margin: 0px;
+    padding: 0px;
+    width: 100vw;
+    height: 100vh;
+    /* display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column; */
+}
+
+canvas {
+    position : absolute;
+    /* z-index: -1; */
+    border: solid black;
+}
+
+.button-container {
+    display: flex;
+    margin: 0px;
+    flex-flow: row wrap;
+}
+
+button {
+    margin: 5px;
+}
+
+button:hover {
+    background-color:red;
+}

@@ -1,10 +1,10 @@
 const camBtnEl = document.getElementById('cam-btn');
 const capBtnEl = document.getElementById('cap-btn');
 const video = document.getElementById('video');
-const imgCanvas = document.getElementById('canvas');
+// const imgCanvas = document.getElementById('img-canvas');
 const photo = document.getElementById('photo');
+const videoContEl = document.querySelector('.video-container');
 let stream = null;
-let videoCanvas = null;
 
 // load all the models before the camera opens
 Promise.all([
@@ -31,14 +31,13 @@ async function startVideo() {
 // face detection
 video.addEventListener('canplay', ()=> {
     console.log('Video is playing')
-    videoCanvas = faceapi.createCanvasFromMedia(video);
+    const videoCanvas = faceapi.createCanvasFromMedia(video);
     document.body.append(videoCanvas);
     const displaySize = { width : video.width, height : video.height};
     faceapi.matchDimensions(videoCanvas, displaySize);
     setInterval(async () => {
-        const detections = await faceapi.detectAllFaces(video,
-            new faceapi.TinyFaceDetectorOptions())
-            .withFaceLandmarks().withFaceExpressions();
+        const detections = await faceapi.detectAllFaces(video, 
+            new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
         if (detections.length > 0) console.log('Face detected');
         const resizedDetections = faceapi.resizeResults(detections,displaySize);
         videoCanvas.getContext('2d').clearRect(0,0,videoCanvas.width,videoCanvas.height);
@@ -63,18 +62,19 @@ camBtnEl.addEventListener('click', () => {
             }
         })
         video.srcObject = null;
-        videoCanvas.getContext('2d').clearRect(0,0,videoCanvas.width,videoCanvas.height);
         camBtnEl.textContent = 'Open Camera';
         console.log('Close button clicked');
     }
 }, false);
 
 // press button to capture
-capBtnEl.addEventListener('click', ()=> {
-    console.log('Capture button clicked');
-    if (video.srcObject) {
-        imgCanvas.getContext('2d').drawImage(video,0,0,video.width,video.height);
-        let data = imgCanvas.taDataURL('image/png');
-        photo.setAttribute('src', data);
-    }
-})
+// capBtnEl.addEventListener('click', ()=> {
+//     console.log('Capture button clicked');
+//     if (video.srcObject) {
+//         imgCanvas.width = video.width;
+//         imgCanvas.height = video.height;
+//         imgCanvas.getContext('2d').drawImage(video,0,0,imgCanvas.width,imgCanvas.height);
+//         let data = imgCanvas.taDataURL('image/png');
+//         photo.setAttribute('src', data);
+//     }
+// })
