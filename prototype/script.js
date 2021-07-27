@@ -32,7 +32,7 @@ async function startVideo() {
 video.addEventListener('canplay', ()=> {
     console.log('Video is playing')
     const videoCanvas = faceapi.createCanvasFromMedia(video);
-    document.body.append(videoCanvas);
+    videoContEl.appendChild(videoCanvas);
     const displaySize = { width : video.width, height : video.height};
     faceapi.matchDimensions(videoCanvas, displaySize);
     setInterval(async () => {
