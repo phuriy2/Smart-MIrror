@@ -2,8 +2,18 @@ const camBtnEl = document.getElementById('cam-btn');
 const capBtnEl = document.getElementById('cap-btn');
 const video = document.getElementById('video');
 const videoContEl = document.querySelector('.video-container');
+const btnContEl = document.querySelector('.button-container');
 const imgCanvas = document.getElementById('img-canvas');
+
 let stream = null;
+// Face Landmarks Button
+const lmBtnEl = document.createElement('button');
+lmBtnEl.id = 'lm-btn';
+lmBtnEl.textContent = 'Enable Face Landmarks';
+// Face Expression Button
+const expBtnEl = document.createElement('button');
+expBtnEl.id = 'exp-btn';
+expBtnEl.textContent = 'Enable Face Expression';
 
 // load all the models before the camera opens
 Promise.all([
@@ -11,6 +21,7 @@ Promise.all([
     faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
     faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
     faceapi.nets.faceExpressionNet.loadFromUri('/models'),
+    faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
 ]).then(()=> {
     console.log('Models loaded');
 });
@@ -28,23 +39,25 @@ async function startVideo() {
 }
 
 // face detection
-video.addEventListener('canplay', ()=> {
-    console.log('Video is playing')
-    const videoCanvas = faceapi.createCanvasFromMedia(video);
-    videoCanvas.id = "video-canvas";
-    videoContEl.appendChild(videoCanvas);
-    const displaySize = { width : video.width, height : video.height};
-    faceapi.matchDimensions(videoCanvas, displaySize);
-    setInterval(async () => {
-        const detections = await faceapi.detectAllFaces(video, 
-            new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
-        if (detections.length > 0) console.log('Face detected');
-        const resizedDetections = faceapi.resizeResults(detections,displaySize);
-        videoCanvas.getContext('2d').clearRect(0,0,videoCanvas.width,videoCanvas.height);
-        faceapi.draw.drawDetections(videoCanvas, resizedDetections);
-        faceapi.draw.drawFaceLandmarks(videoCanvas, resizedDetections);
-        faceapi.draw.drawFaceExpressions(videoCanvas, resizedDetections);
-    }, 100)
+video.addEventListener('playing', ()=> {
+    console.log('Video is playing');
+    if (video.srcObject) {
+        const videoCanvas = faceapi.createCanvasFromMedia(video);
+        videoCanvas.id = "video-canvas";
+        videoContEl.appendChild(videoCanvas);
+        const displaySize = { width : video.width, height : video.height};
+        faceapi.matchDimensions(videoCanvas, displaySize);
+        setInterval(async () => {
+            const detections = await faceapi.detectAllFaces(video, 
+                new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
+            if (detections.length > 0) console.log('Face detected');
+            const resizedDetections = faceapi.resizeResults(detections,displaySize);
+            videoCanvas.getContext('2d').clearRect(0,0,videoCanvas.width,videoCanvas.height);
+            faceapi.draw.drawDetections(videoCanvas, resizedDetections);
+            if (lmBtnEl.textContent === 'Disable Face Landmarks') faceapi.draw.drawFaceLandmarks(videoCanvas, resizedDetections);
+            if (expBtnEl.textContent === 'Disable Face Expression') faceapi.draw.drawFaceExpressions(videoCanvas, resizedDetections);
+        }, 100)
+    }
 })
 
 // press button to open camera
@@ -54,6 +67,9 @@ camBtnEl.addEventListener('click', () => {
         startVideo();
         camBtnEl.textContent = 'Close Camera';
         console.log('Open button clicked');
+        // add option button
+        btnContEl.appendChild(lmBtnEl);
+        btnContEl.appendChild(expBtnEl);
     } else {
         // stop the webcam
         stream.getTracks().forEach( track => {
@@ -64,8 +80,37 @@ camBtnEl.addEventListener('click', () => {
         video.srcObject = null;
         camBtnEl.textContent = 'Open Camera';
         console.log('Close button clicked');
+        // remove option button
+        btnContEl.removeChild(lmBtnEl);
+        btnContEl.removeChild(expBtnEl);
+
+        let tmpCanvas = document.getElementById('video-canvas');
+        videoContEl.removeChild(tmpCanvas);
     }
-}, false);
+});
+
+
+// press button to toggle the visibility of face landmarks
+lmBtnEl.addEventListener('click', () => {
+    if (video.srcObject) {
+        if (lmBtnEl.textContent === 'Enable Face Landmarks') {
+            lmBtnEl.textContent = 'Disable Face Landmarks';
+        } else {
+            lmBtnEl.textContent = 'Enable Face Landmarks';
+        }
+    }  
+})
+
+// press button to toggle the visibility of face expression
+expBtnEl.addEventListener('click', () => {
+    if (video.srcObject) {
+        if (expBtnEl.textContent === 'Enable Face Expression') {
+            expBtnEl.textContent = 'Disable Face Expression';
+        } else {
+            expBtnEl.textContent = 'Enable Face Expression';
+        }
+    }  
+})
 
 // press button to capture
 capBtnEl.addEventListener('click', ()=> {
