@@ -1,9 +1,8 @@
 const camBtnEl = document.getElementById('cam-btn');
 const capBtnEl = document.getElementById('cap-btn');
 const video = document.getElementById('video');
-// const imgCanvas = document.getElementById('img-canvas');
-const photo = document.getElementById('photo');
 const videoContEl = document.querySelector('.video-container');
+const imgCanvas = document.getElementById('img-canvas');
 let stream = null;
 
 // load all the models before the camera opens
@@ -32,6 +31,7 @@ async function startVideo() {
 video.addEventListener('canplay', ()=> {
     console.log('Video is playing')
     const videoCanvas = faceapi.createCanvasFromMedia(video);
+    videoCanvas.id = "video-canvas";
     videoContEl.appendChild(videoCanvas);
     const displaySize = { width : video.width, height : video.height};
     faceapi.matchDimensions(videoCanvas, displaySize);
@@ -68,13 +68,11 @@ camBtnEl.addEventListener('click', () => {
 }, false);
 
 // press button to capture
-// capBtnEl.addEventListener('click', ()=> {
-//     console.log('Capture button clicked');
-//     if (video.srcObject) {
-//         imgCanvas.width = video.width;
-//         imgCanvas.height = video.height;
-//         imgCanvas.getContext('2d').drawImage(video,0,0,imgCanvas.width,imgCanvas.height);
-//         let data = imgCanvas.taDataURL('image/png');
-//         photo.setAttribute('src', data);
-//     }
-// })
+capBtnEl.addEventListener('click', ()=> {
+    console.log('Capture button clicked');
+    if (video.srcObject) {
+        imgCanvas.width = video.videoWidth;
+        imgCanvas.height = video.videoHeight;
+        imgCanvas.getContext('2d').drawImage(video,0,0,imgCanvas.width,imgCanvas.height);
+    }
+})
