@@ -1,3 +1,5 @@
+import * as canvas from 'canvas';
+
 const video = document.getElementById('video');
 const videoContEl = document.querySelector('.video-container');
 const btnContEl = document.querySelector('.button-container');
