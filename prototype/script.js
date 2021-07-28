@@ -1,4 +1,6 @@
-import * as canvas from 'canvas';
+const canvas = require('canvas');
+const path = require('path');
+faceapi.env.monkeyPatch({ Canvas, Image });
 
 const video = document.getElementById('video');
 const videoContEl = document.querySelector('.video-container');
@@ -35,16 +37,26 @@ Promise.all([
     btnContEl.appendChild(capBtnEl);
     btnContEl.appendChild(camBtnEl);
     console.log('Models loaded');
-    const labeledFaceDescriptors = await loadLabeledImages();
-    const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
+    loadFaceDescriptor();
     console.log('Face descriptors loaded');
 });
 
-function loadLabeledImages() {
+async function loadFaceDescriptor() {
+    const labeledFaceDescriptors = await loadLabeledImages();
+    const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
+}
+
+async function loadLabeledImages() {
     const labels = ['First', 'Mook', 'Prim'];
     return Promise.all(
         labels.map(async label => {
-            const img = await faceapi.fetchImage(``)
+            const descriptions = [];
+            let imgPath = path.join(__dirname, '/sample_picture/', label, '/1.jpg');
+            console.log(imgPath);
+            const img = await canvas.loadImage(imgPath);
+            const loadDetections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+            descriptions.push(loadDetections.descriptor);
+            return new faceapi.LabeledFaceDescriptors(label, descriptions);
         })
     )
 }
