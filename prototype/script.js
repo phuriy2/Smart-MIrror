@@ -1,11 +1,18 @@
-const camBtnEl = document.getElementById('cam-btn');
-const capBtnEl = document.getElementById('cap-btn');
 const video = document.getElementById('video');
 const videoContEl = document.querySelector('.video-container');
 const btnContEl = document.querySelector('.button-container');
 const imgCanvas = document.getElementById('img-canvas');
 
 let stream = null;
+
+// Capture Button
+const capBtnEl = document.createElement('button');
+capBtnEl.id = 'cap-btn';
+capBtnEl.textContent = 'Capture';
+// Camera Button
+const camBtnEl = document.createElement('button');
+camBtnEl.id = 'cam-btn';
+camBtnEl.textContent = 'Open Camera';
 // Face Landmarks Button
 const lmBtnEl = document.createElement('button');
 lmBtnEl.id = 'lm-btn';
@@ -23,8 +30,22 @@ Promise.all([
     faceapi.nets.faceExpressionNet.loadFromUri('/models'),
     faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
 ]).then(()=> {
+    btnContEl.appendChild(capBtnEl);
+    btnContEl.appendChild(camBtnEl);
     console.log('Models loaded');
+    const labeledFaceDescriptors = await loadLabeledImages();
+    const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
+    console.log('Face descriptors loaded');
 });
+
+function loadLabeledImages() {
+    const labels = ['First', 'Mook', 'Prim'];
+    return Promise.all(
+        labels.map(async label => {
+            const img = await faceapi.fetchImage(``)
+        })
+    )
+}
 
 
 // start video
