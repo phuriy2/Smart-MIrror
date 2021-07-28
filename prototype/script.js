@@ -1,13 +1,12 @@
-const canvas = require('canvas');
-const path = require('path');
-faceapi.env.monkeyPatch({ Canvas, Image });
-
 const video = document.getElementById('video');
 const videoContEl = document.querySelector('.video-container');
 const btnContEl = document.querySelector('.button-container');
-const imgCanvas = document.getElementById('img-canvas');
+const capContEl = document.querySelector('.capture-container');
 
 let stream = null;
+let faceMatcher = null;
+let capImg = null;
+let capCanvas = null;
 
 // Capture Button
 const capBtnEl = document.createElement('button');
@@ -38,12 +37,13 @@ Promise.all([
     btnContEl.appendChild(camBtnEl);
     console.log('Models loaded');
     loadFaceDescriptor();
+    document.getElementById('load-desc').remove();
     console.log('Face descriptors loaded');
 });
 
 async function loadFaceDescriptor() {
     const labeledFaceDescriptors = await loadLabeledImages();
-    const faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
+    faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
 }
 
 async function loadLabeledImages() {
@@ -51,9 +51,7 @@ async function loadLabeledImages() {
     return Promise.all(
         labels.map(async label => {
             const descriptions = [];
-            let imgPath = path.join(__dirname, '/sample_picture/', label, '/1.jpg');
-            console.log(imgPath);
-            const img = await canvas.loadImage(imgPath);
+            const img = await faceapi.fetchImage(`https://raw.githubusercontent.com/phuriy2/Smart-Mirror/main/prototype/sample_picture/${label}/1.jpg`);
             const loadDetections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
             descriptions.push(loadDetections.descriptor);
             return new faceapi.LabeledFaceDescriptors(label, descriptions);
@@ -150,9 +148,26 @@ expBtnEl.addEventListener('click', () => {
 // press button to capture
 capBtnEl.addEventListener('click', ()=> {
     console.log('Capture button clicked');
+    if (capImg) capImg.remove();
+    if (capCanvas) capCanvas.remove();
     if (video.srcObject) {
-        imgCanvas.width = video.videoWidth;
-        imgCanvas.height = video.videoHeight;
-        imgCanvas.getContext('2d').drawImage(video,0,0,imgCanvas.width,imgCanvas.height);
+        faceapi.createCanvasFromMedia(video).toBlob( async (blob) => {
+            capImg = await faceapi.bufferToImage(blob);
+            capContEl.appendChild(capImg);
+            // for face detection
+            capCanvas = faceapi.createCanvasFromMedia(capImg);
+            capCanvas.id = 'capture-canvas';
+            capContEl.appendChild(capCanvas);
+            const capDisplaySize = { width : capImg.width, height : capImg.height };
+            faceapi.matchDimensions(capCanvas, capDisplaySize);
+            const capDetections = await faceapi.detectAllFaces(capImg).withFaceLandmarks().withFaceDescriptors();
+            const capResizedDetections = faceapi.resizeResults(capDetections, capDisplaySize);
+            const results = capResizedDetections.map( d => faceMatcher.findBestMatch(d.descriptor));
+            results.forEach((result, i) => {
+                const box = capResizedDetections[i].detection.box;
+                const drawBox = new faceapi.draw.DrawBox(box, { label : result.toString() });
+                drawBox.draw(capCanvas);
+            })
+        }) 
     }
 })
