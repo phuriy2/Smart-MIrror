@@ -33,8 +33,6 @@ Promise.all([
     faceapi.nets.faceExpressionNet.loadFromUri('/models'),
     faceapi.nets.ssdMobilenetv1.loadFromUri('/models'),
 ]).then(()=> {
-    btnContEl.appendChild(capBtnEl);
-    btnContEl.appendChild(camBtnEl);
     console.log('Models loaded');
     loadFaceDescriptor();
 });
@@ -43,11 +41,13 @@ async function loadFaceDescriptor() {
     const labeledFaceDescriptors = await loadLabeledImages();
     faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
     document.getElementById('load-desc').remove();
+    btnContEl.appendChild(capBtnEl);
+    btnContEl.appendChild(camBtnEl);
     console.log('Face descriptors loaded');
 }
 
 async function loadLabeledImages() {
-    const labels = ['First', 'Mooktean', 'Prim'];
+    const labels = ['Mooktean', 'Prim', 'First'];
     return Promise.all(
         labels.map(async label => {
             const descriptions = [];
