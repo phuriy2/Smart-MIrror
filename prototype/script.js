@@ -47,7 +47,7 @@ async function loadFaceDescriptor() {
 }
 
 async function loadLabeledImages() {
-    const labels = ['First', 'Mook', 'Prim'];
+    const labels = ['First', 'Mooktean', 'Prim'];
     return Promise.all(
         labels.map(async label => {
             const descriptions = [];
