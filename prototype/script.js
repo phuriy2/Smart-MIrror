@@ -1,4 +1,3 @@
-const video = document.getElementById('video');
 const videoContEl = document.querySelector('.video-container');
 const btnContEl = document.querySelector('.button-container');
 const capContEl = document.querySelector('.capture-container');
@@ -8,6 +7,12 @@ let faceMatcher = null;
 let capImg = null;
 let capCanvas = null;
 
+// Video Element Setup
+const video = document.createElement('video');
+video.width = 720;
+video.height = 560;
+video.autoplay = true;
+video.muted = true;
 // Capture Button
 const capBtnEl = document.createElement('button');
 capBtnEl.id = 'cap-btn';
@@ -40,6 +45,7 @@ Promise.all([
 async function loadFaceDescriptor() {
     const labeledFaceDescriptors = await loadLabeledImages();
     faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
+    document.querySelector('.loader').remove();
     document.getElementById('load-desc').remove();
     btnContEl.appendChild(capBtnEl);
     btnContEl.appendChild(camBtnEl);
@@ -70,6 +76,7 @@ async function startVideo() {
     try {
         stream = await navigator.mediaDevices.getUserMedia( {video: {}} )
         video.srcObject = stream;
+        videoContEl.appendChild(video);
         video.play();
     } catch (err) {
         console.error(err);
@@ -116,6 +123,7 @@ camBtnEl.addEventListener('click', () => {
             }
         })
         video.srcObject = null;
+        videoContEl.removeChild(video);
         camBtnEl.textContent = 'Open Camera';
         console.log('Close button clicked');
         // remove option button
