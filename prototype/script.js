@@ -51,9 +51,12 @@ async function loadLabeledImages() {
     return Promise.all(
         labels.map(async label => {
             const descriptions = [];
-            const img = await faceapi.fetchImage(`https://raw.githubusercontent.com/phuriy2/Smart-Mirror/main/prototype/sample_picture/${label}/1.jpg`);
-            const loadDetections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
-            descriptions.push(loadDetections.descriptor);
+            for (let i = 1; i <= 5; i++) {
+                const img = await faceapi.fetchImage(`https://raw.githubusercontent.com/phuriy2/Smart-Mirror/main/prototype/sample_picture/${label}/${i}.jpg`);
+                const loadDetections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                descriptions.push(loadDetections.descriptor);
+            }
+            
             return new faceapi.LabeledFaceDescriptors(label, descriptions);
         })
     )
