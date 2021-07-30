@@ -37,13 +37,13 @@ Promise.all([
     btnContEl.appendChild(camBtnEl);
     console.log('Models loaded');
     loadFaceDescriptor();
-    document.getElementById('load-desc').remove();
-    console.log('Face descriptors loaded');
 });
 
 async function loadFaceDescriptor() {
     const labeledFaceDescriptors = await loadLabeledImages();
     faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
+    document.getElementById('load-desc').remove();
+    console.log('Face descriptors loaded');
 }
 
 async function loadLabeledImages() {
@@ -54,6 +54,8 @@ async function loadLabeledImages() {
             for (let i = 1; i <= 5; i++) {
                 const img = await faceapi.fetchImage(`https://raw.githubusercontent.com/phuriy2/Smart-Mirror/main/prototype/sample_picture/${label}/${i}.jpg`);
                 const loadDetections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                // console.log(loadDetections);
+                if (!loadDetections) console.log(`Descriptor is undefined at ${label} Picture ${i}`)
                 descriptions.push(loadDetections.descriptor);
             }
             
