@@ -2,8 +2,10 @@ const videoContEl = document.querySelector('.video-container');
 const togContEl = document.querySelector('.toggle-container');
 
 let stream = null;
+let canvas = null;
 let faceMatcher = null;
 let faceDetected = false;
+let canvasOpen = false;
 
 
 // Video Element Setup
@@ -13,14 +15,35 @@ video.height = 630;
 video.autoplay = true;
 video.muted = true;
 
-
 // Camera Toggle Button setup
 const toggle = document.createElement('label');
 toggle.innerHTML = 
     `<label class="switch">
-        <input type="checkbox">
+        <input type="checkbox" onclick="checkToggle()" id="toggle-btn">
         <span class="slider round"></span>
     </label>`;
+
+function checkToggle() {
+    if (video.srcObject) {
+        const togBtn = document.getElementById('toggle-btn');
+        if (togBtn.checked != true) {
+            canvas = faceapi.createCanvasFromMedia(video);
+            const displaySize = { width : video.width, height : video.height };
+            faceapi.matchDimensions(canvas, displaySize);
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = '20px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'red';
+            ctx.fillText("Your camera is blocked.", canvas.width/2, canvas.height/8);
+
+            if (!canvasOpen) {
+                videoContEl.appendChild(canvas);
+                canvasOpen = true;
+            }
+        }
+    }
+}
 
 // load all the models before the camera opens
 Promise.all([
@@ -42,7 +65,6 @@ async function loadFaceDescriptor() {
     document.querySelector('.loader').remove();
     document.getElementById('load-desc').remove();
     console.log('Face descriptors loaded');
-    togContEl.appendChild(toggle);
     startVideo();
 }
 
@@ -70,6 +92,7 @@ async function startVideo() {
         stream = await navigator.mediaDevices.getUserMedia( {video: {}} )
         video.srcObject = stream;
         videoContEl.appendChild(video);
+        togContEl.appendChild(toggle);
         video.play();
     } catch (err) {
         console.error(err);
@@ -84,7 +107,7 @@ video.addEventListener('playing', () => {
         const recInterval = setInterval(async () => {
             faceapi.createCanvasFromMedia(video).toBlob(async blob => {
                 const img = await faceapi.bufferToImage(blob);
-                const canvas = faceapi.createCanvasFromMedia(img);
+                canvas = faceapi.createCanvasFromMedia(img);
                 const displaySize = { width : img.width, height : img.height };
                 faceapi.matchDimensions(canvas, displaySize);
                 const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceExpressions().withFaceDescriptor();
@@ -108,7 +131,10 @@ video.addEventListener('playing', () => {
 function greetUser(userName, userEmotion) {
     if (video.srcObject && faceDetected) {
         speechSynthesis.speak(new SpeechSynthesisUtterance('Hello ' + userName));
-        speechSynthesis.speak(new SpeechSynthesisUtterance('You look '+ userEmotion))
+        if (userEmotion === 'happy' || userEmotion === 'sad') {
+            speechSynthesis.speak(new SpeechSynthesisUtterance('You look '+ userEmotion));
+        }
+        speechSynthesis.speak(new SpeechSynthesisUtterance('How are you doing?'));
         // const canvas = faceapi.createCanvasFromMedia(video);
         // const displaySize = { width : video.width, height : video.height};
         // faceapi.matchDimensions(canvas, displaySize);
