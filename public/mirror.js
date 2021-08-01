@@ -43,7 +43,7 @@ async function loadLabeledImages() {
         labels.map(async label => {
             const descriptions = [];
             for (let i = 1; i <= 2; i++) {
-                const img = await faceapi.fetchImage(`https://raw.githubusercontent.com/phuriy2/Smart-Mirror/main/prototype/sample_picture/${label}/${i}.jpg`);
+                const img = await faceapi.fetchImage(`https://raw.githubusercontent.com/phuriy2/Smart-Mirror/main/sample_picture/${label}/${i}.jpg`);
                 const loadDetections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
                 if (!loadDetections) console.log(`Descriptor is undefined at ${label} Picture ${i}`)
                 descriptions.push(loadDetections.descriptor);
