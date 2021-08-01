@@ -85,7 +85,6 @@ video.addEventListener('playing', () => {
                     const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
                     name = bestMatch.toString().split(" (")[0];
                     if (name != 'undefined' && name != 'unknown' && !faceDetected) {
-                        console.log(name);
                         faceDetected = true;
                         greetUser(name, emotion);
                         clearInterval(recInterval);
@@ -98,15 +97,17 @@ video.addEventListener('playing', () => {
 
 function greetUser(userName, userEmotion) {
     if (video.srcObject && faceDetected) {
-        const canvas = faceapi.createCanvasFromMedia(video);
-        const displaySize = { width : video.width, height : video.height};
-        faceapi.matchDimensions(canvas, displaySize);
-        const ctx = canvas.getContext("2d");
-        ctx.font = "30px sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillStyle = "white";
-        ctx.fillText("Hello, " + userName, canvas.width/2, canvas.height/2);
-        ctx.fillText("You look " + userEmotion, canvas.width/2, canvas.height*9/16);
-        videoContEl.appendChild(canvas);
+        speechSynthesis.speak(new SpeechSynthesisUtterance('Hello ' + userName));
+        speechSynthesis.speak(new SpeechSynthesisUtterance('You look '+ userEmotion))
+        // const canvas = faceapi.createCanvasFromMedia(video);
+        // const displaySize = { width : video.width, height : video.height};
+        // faceapi.matchDimensions(canvas, displaySize);
+        // const ctx = canvas.getContext("2d");
+        // ctx.font = "30px sans-serif";
+        // ctx.textAlign = "center";
+        // ctx.fillStyle = "white";
+        // ctx.fillText("Hello, " + userName, canvas.width/2, canvas.height/2);
+        // ctx.fillText("You look " + userEmotion, canvas.width/2, canvas.height*9/16);
+        // videoContEl.appendChild(canvas);
     }
 }
