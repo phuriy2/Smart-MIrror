@@ -1,4 +1,5 @@
 const videoContEl = document.querySelector('.video-container');
+const togContEl = document.querySelector('.toggle-container');
 
 let stream = null;
 let faceMatcher = null;
@@ -12,6 +13,14 @@ video.height = 630;
 video.autoplay = true;
 video.muted = true;
 
+
+// Camera Toggle Button setup
+const toggle = document.createElement('label');
+toggle.innerHTML = 
+    `<label class="switch">
+        <input type="checkbox">
+        <span class="slider round"></span>
+    </label>`;
 
 // load all the models before the camera opens
 Promise.all([
@@ -33,6 +42,7 @@ async function loadFaceDescriptor() {
     document.querySelector('.loader').remove();
     document.getElementById('load-desc').remove();
     console.log('Face descriptors loaded');
+    togContEl.appendChild(toggle);
     startVideo();
 }
 
