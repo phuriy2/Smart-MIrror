@@ -2,6 +2,7 @@ const videoContEl = document.querySelector('.video-container');
 
 let stream = null;
 let faceMatcher = null;
+let faceDetected = false;
 
 
 // Video Element Setup
@@ -26,7 +27,7 @@ Promise.all([
 
 
 async function loadFaceDescriptor() {
-    document.getElementById('load-desc').textContent = 'Loading face descriptor...';
+    document.getElementById('load-desc').textContent = 'Loading face descriptors';
     const labeledFaceDescriptors = await loadLabeledImages();
     faceMatcher = new faceapi.FaceMatcher(labeledFaceDescriptors);
     document.querySelector('.loader').remove();
@@ -41,7 +42,7 @@ async function loadLabeledImages() {
     return Promise.all(
         labels.map(async label => {
             const descriptions = [];
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 2; i++) {
                 const img = await faceapi.fetchImage(`https://raw.githubusercontent.com/phuriy2/Smart-Mirror/main/prototype/sample_picture/${label}/${i}.jpg`);
                 const loadDetections = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
                 if (!loadDetections) console.log(`Descriptor is undefined at ${label} Picture ${i}`)
@@ -62,5 +63,46 @@ async function startVideo() {
         video.play();
     } catch (err) {
         console.error(err);
+    }
+}
+
+// face recognition
+video.addEventListener('playing', () => {
+    console.log('Video is playing');
+    if (video.srcObject && !faceDetected) {
+        let name = 'undefined';
+        const recInterval = setInterval(async () => {
+            faceapi.createCanvasFromMedia(video).toBlob(async blob => {
+                const img = await faceapi.bufferToImage(blob);
+                const canvas = faceapi.createCanvasFromMedia(img);
+                const displaySize = { width : img.width, height : img.height };
+                faceapi.matchDimensions(canvas, displaySize);
+                const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                if (detection) {
+                    const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+                    name = bestMatch.toString().split(" (")[0];
+                    if (name != 'undefined' && name != 'unknown') {
+                        console.log(name);
+                        faceDetected = true;
+                        greetUser(name);
+                        clearInterval(recInterval);
+                    }
+                }
+            })
+        }, 100)
+    }
+})
+
+function greetUser(userName) {
+    if (video.srcObject && faceDetected) {
+        const canvas = faceapi.createCanvasFromMedia(video);
+        const displaySize = { width : video.width, height : video.height};
+        faceapi.matchDimensions(canvas, displaySize);
+        const ctx = canvas.getContext("2d");
+        ctx.font = "30px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "white";
+        ctx.fillText("Hello, " + userName, canvas.width/2, canvas.height/2);
+        videoContEl.appendChild(canvas);
     }
 }
