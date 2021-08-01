@@ -77,14 +77,17 @@ video.addEventListener('playing', () => {
                 const canvas = faceapi.createCanvasFromMedia(img);
                 const displaySize = { width : img.width, height : img.height };
                 faceapi.matchDimensions(canvas, displaySize);
-                const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceDescriptor();
+                const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceExpressions().withFaceDescriptor();
                 if (detection) {
+                    let expArray = Object.values(detection.expressions);
+                    let max = Math.max(...expArray);
+                    let emotion = Object.keys(detection.expressions).find(key => detection.expressions[key] === max);
                     const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
                     name = bestMatch.toString().split(" (")[0];
-                    if (name != 'undefined' && name != 'unknown') {
+                    if (name != 'undefined' && name != 'unknown' && !faceDetected) {
                         console.log(name);
                         faceDetected = true;
-                        greetUser(name);
+                        greetUser(name, emotion);
                         clearInterval(recInterval);
                     }
                 }
@@ -93,7 +96,7 @@ video.addEventListener('playing', () => {
     }
 })
 
-function greetUser(userName) {
+function greetUser(userName, userEmotion) {
     if (video.srcObject && faceDetected) {
         const canvas = faceapi.createCanvasFromMedia(video);
         const displaySize = { width : video.width, height : video.height};
@@ -103,6 +106,7 @@ function greetUser(userName) {
         ctx.textAlign = "center";
         ctx.fillStyle = "white";
         ctx.fillText("Hello, " + userName, canvas.width/2, canvas.height/2);
+        ctx.fillText("You look " + userEmotion, canvas.width/2, canvas.height*9/16);
         videoContEl.appendChild(canvas);
     }
 }
