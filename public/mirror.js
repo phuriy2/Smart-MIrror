@@ -2,10 +2,12 @@ const videoContEl = document.querySelector('.video-container');
 const togContEl = document.querySelector('.toggle-container');
 
 let stream = null;
-let canvas = null;
+let uiCanvas = null;
+let blockCanvas = null;
 let faceMatcher = null;
 let faceDetected = false;
-let canvasOpen = false;
+let camOpen = false;
+let blockCalled = false;
 
 
 // Video Element Setup
@@ -26,21 +28,21 @@ toggle.innerHTML =
 function checkToggle() {
     if (video.srcObject) {
         const togBtn = document.getElementById('toggle-btn');
-        if (togBtn.checked != true) {
-            canvas = faceapi.createCanvasFromMedia(video);
-            const displaySize = { width : video.width, height : video.height };
-            faceapi.matchDimensions(canvas, displaySize);
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.font = '20px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillStyle = 'red';
-            ctx.fillText("Your camera is blocked.", canvas.width/2, canvas.height/8);
-
-            if (!canvasOpen) {
-                videoContEl.appendChild(canvas);
-                canvasOpen = true;
-            }
+        blockCanvas = faceapi.createCanvasFromMedia(video);
+        blockCanvas.id = 'block-canvas';
+        const displaySize = { width : video.width, height : video.height };
+        faceapi.matchDimensions(blockCanvas, displaySize);
+        const ctx = blockCanvas.getContext('2d');
+        ctx.font = '25px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = 'red';
+        ctx.fillText("Your camera is blocked", blockCanvas.width/2, blockCanvas.height/20);
+        if (!togBtn.checked) { 
+            videoContEl.appendChild(blockCanvas);
+            camOpen = false;
+        } else {
+            videoContEl.removeChild(document.getElementById('block-canvas'));
+            camOpen = true;
         }
     }
 }
@@ -99,11 +101,71 @@ async function startVideo() {
     }
 }
 
+// UI on mirror
+function createFrame() {
+    uiCanvas = faceapi.createCanvasFromMedia(video);
+    uiCanvas.id = 'ui-canvas';
+    const displaySize = { width : video.width, height : video.height };
+    faceapi.matchDimensions(uiCanvas, displaySize);
+    const ctx = uiCanvas.getContext('2d');
+    let today = new Date();
+    ctx.font = '90px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'white';
+    let minute = today.getMinutes();
+    if (today.getMinutes() < 10) {
+        minute = "0" + minute;
+    }
+    ctx.fillText(today.getHours() + ':' + minute, uiCanvas.width/2, uiCanvas.height*0.22);
+    ctx.font = '30px sans-serif';
+    let day = getDay(today.getDay());
+    let month = getMonth(today.getMonth());
+    ctx.fillText(day + ', ' + today.getDate() + ' ' + month, uiCanvas.width/2, uiCanvas.height*0.27);
+    videoContEl.appendChild(uiCanvas);
+}
+
+function resetFrame() {
+    videoContEl.removeChild(document.getElementById('ui-canvas'));
+    createFrame();
+}
+
+function getDay(num) {
+    switch (num) {
+        case 0: return "Sunday";
+        case 1: return "Monday";
+        case 2: return "Tuesday";
+        case 3: return "Wednesday";
+        case 4: return "Thursday";
+        case 5: return "Friday";
+        case 6: return "Saturday";
+    }
+}
+
+function getMonth(num) {
+    switch (num) {
+        case 0: return "January";
+        case 1: return "February";
+        case 2: return "March";
+        case 3: return "April";
+        case 4: return "May";
+        case 5: return "June";
+        case 6: return "July";
+        case 7: return "August";
+        case 8: return "September";
+        case 9: return "October";
+        case 10: return "November";
+        case 11: return "December";
+    }
+}
+
+
 // face recognition
 video.addEventListener('playing', () => {
     console.log('Video is playing');
     if (video.srcObject && !faceDetected) {
         let name = 'undefined';
+        checkToggle();
+        createFrame();
         const recInterval = setInterval(async () => {
             faceapi.createCanvasFromMedia(video).toBlob(async blob => {
                 const img = await faceapi.bufferToImage(blob);
@@ -124,7 +186,7 @@ video.addEventListener('playing', () => {
                     }
                 }
             })
-        }, 100)
+        }, 100)      
     }
 })
 
