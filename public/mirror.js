@@ -112,11 +112,15 @@ function createFrame() {
     ctx.font = '90px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillStyle = 'white';
+    let hour = today.getHours();
     let minute = today.getMinutes();
+    if (today.getHours() < 10) {
+        hour = "0" + hour;
+    }
     if (today.getMinutes() < 10) {
         minute = "0" + minute;
     }
-    ctx.fillText(today.getHours() + ':' + minute, uiCanvas.width/2, uiCanvas.height*0.22);
+    ctx.fillText(hour + ':' + minute, uiCanvas.width/2, uiCanvas.height*0.22);
     ctx.font = '30px sans-serif';
     let day = getDay(today.getDay());
     let month = getMonth(today.getMonth());
@@ -166,27 +170,36 @@ video.addEventListener('playing', () => {
         let name = 'undefined';
         checkToggle();
         createFrame();
-        const recInterval = setInterval(async () => {
-            faceapi.createCanvasFromMedia(video).toBlob(async blob => {
-                const img = await faceapi.bufferToImage(blob);
-                canvas = faceapi.createCanvasFromMedia(img);
-                const displaySize = { width : img.width, height : img.height };
-                faceapi.matchDimensions(canvas, displaySize);
-                const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceExpressions().withFaceDescriptor();
-                if (detection) {
-                    let expArray = Object.values(detection.expressions);
-                    let max = Math.max(...expArray);
-                    let emotion = Object.keys(detection.expressions).find(key => detection.expressions[key] === max);
-                    const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
-                    name = bestMatch.toString().split(" (")[0];
-                    if (name != 'undefined' && name != 'unknown' && !faceDetected) {
-                        faceDetected = true;
-                        greetUser(name, emotion);
-                        clearInterval(recInterval);
-                    }
+        const frameInterval = setInterval(async () => {
+            resetFrame();
+            if (!camOpen) {
+                if (!blockCalled) {
+                    speechSynthesis.speak(new SpeechSynthesisUtterance('Please open your camera to continue'));
+                    blockCalled = true;
                 }
-            })
-        }, 100)      
+            } else {
+                if (!faceDetected) {
+                    faceapi.createCanvasFromMedia(video).toBlob(async blob => {
+                        const img = await faceapi.bufferToImage(blob);
+                        const canvas = faceapi.createCanvasFromMedia(img);
+                        const displaySize = { width : img.width, height : img.height };
+                        faceapi.matchDimensions(canvas, displaySize);
+                        const detection = await faceapi.detectSingleFace(img).withFaceLandmarks().withFaceExpressions().withFaceDescriptor();
+                        if (detection) {
+                            let expArray = Object.values(detection.expressions);
+                            let max = Math.max(...expArray);
+                            let emotion = Object.keys(detection.expressions).find(key => detection.expressions[key] === max);
+                            const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+                            name = bestMatch.toString().split(" (")[0];
+                            if (name != 'undefined' && name != 'unknown' && !faceDetected) {
+                                faceDetected = true;
+                                greetUser(name, emotion);
+                            }
+                        }
+                    })
+                }    
+            }
+        }, 100);     
     }
 })
 
@@ -196,16 +209,6 @@ function greetUser(userName, userEmotion) {
         if (userEmotion === 'happy' || userEmotion === 'sad') {
             speechSynthesis.speak(new SpeechSynthesisUtterance('You look '+ userEmotion));
         }
-        speechSynthesis.speak(new SpeechSynthesisUtterance('How are you doing?'));
-        // const canvas = faceapi.createCanvasFromMedia(video);
-        // const displaySize = { width : video.width, height : video.height};
-        // faceapi.matchDimensions(canvas, displaySize);
-        // const ctx = canvas.getContext("2d");
-        // ctx.font = "30px sans-serif";
-        // ctx.textAlign = "center";
-        // ctx.fillStyle = "white";
-        // ctx.fillText("Hello, " + userName, canvas.width/2, canvas.height/2);
-        // ctx.fillText("You look " + userEmotion, canvas.width/2, canvas.height*9/16);
-        // videoContEl.appendChild(canvas);
+        speechSynthesis.speak(new SpeechSynthesisUtterance('How are you today?'));
     }
 }
