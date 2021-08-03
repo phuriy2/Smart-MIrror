@@ -33,14 +33,6 @@ toggleBtn = () => {
 
 startBtn.addEventListener("click", toggleBtn);
 
-// recognition.onspeechstart = () => {
-//     if (speechSynth.speaking) {
-//         recogntion.abort();
-//     } else if (!listening) {
-//         recognition.start();
-//     }
-// }
-
 recognition.onresult = event => {
     const last = event.results.length - 1;
     const res = event.results[last];
@@ -50,7 +42,23 @@ recognition.onresult = event => {
         const response = process(text);
 
         const p = document.createElement('p');
-        p.innerHTML = `You said ${text}<br>Siri said ${response}`;
+        p.innerHTML = `You said ${text}`;
+
+
+        fetch(`/voice?text=${text}`)
+        .then(response => response.json())
+        .then(result => {
+            if (text.indexOf('*')!= -1) result.score -= 5;
+            if (result.score < 0) {
+                p.innerHTML += `<br>Your sentence was negative!`;
+            } else if (result.score > 0) {
+                p.innerHTML += `<br>Your sentence was positive!`;
+            }
+        })
+
+        p.innerHTML += `<br>Siri said ${response}`;
+
+
         processing.innerHTML = "";
         result.appendChild(p);
         synthResponse = new SpeechSynthesisUtterance(response);
