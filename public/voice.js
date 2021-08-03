@@ -3,12 +3,19 @@ const result = document.getElementById('result');
 const processing = document.getElementById('processing');
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
+let grammar = '#JSGF V1.0';
+
 if (typeof SpeechRecognition === "undefined") {
     startBtn.remove();
     result.innerHTML = '<b>Browser does not support Speech API</b>';
 }
 
 const recognition = new SpeechRecognition();
+const grammarList = new SpeechGrammarList();
+const speechSynth = window.speechSynthesis;
+grammarList.addFromString(grammar, 1);
+recognition.grammars = grammarList;
 recognition.continuous = true;
 recognition.interimResults = true;
 
@@ -26,6 +33,14 @@ toggleBtn = () => {
 
 startBtn.addEventListener("click", toggleBtn);
 
+// recognition.onspeechstart = () => {
+//     if (speechSynth.speaking) {
+//         recogntion.abort();
+//     } else if (!listening) {
+//         recognition.start();
+//     }
+// }
+
 recognition.onresult = event => {
     const last = event.results.length - 1;
     const res = event.results[last];
@@ -38,11 +53,25 @@ recognition.onresult = event => {
         p.innerHTML = `You said ${text}<br>Siri said ${response}`;
         processing.innerHTML = "";
         result.appendChild(p);
-        speechSynthesis.speak(new SpeechSynthesisUtterance(response));
+        synthResponse = new SpeechSynthesisUtterance(response);
+        speechSynth.speak(synthResponse);
+        
+        synthResponse.onstart = () => {
+            if (listening) {
+                recognition.abort();
+                console.log('Recognition aborted');
+            }
+        }
+
+        synthResponse.onend = () => {
+            if (listening) {
+                recognition.start();
+                console.log('Recognition started');
+            }
+        }
     } else {
         processing.innerHTML = `listening: ${text}`;
     }
-    
 }
 
 function process(rawText) {
@@ -70,3 +99,4 @@ function process(rawText) {
    return response;
 
 }
+
