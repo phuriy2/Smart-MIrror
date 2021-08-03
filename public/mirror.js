@@ -91,11 +91,34 @@ async function loadLabeledImages() {
 // start video
 async function startVideo() {
     try {
+        if (navigator.mediaDevices === undefined) {
+            navigator.mediaDevices = {};
+        }
+
+        if (navigator.mediaDevices.getUserMedia === undefined) {
+            navigator.mediaDevices.getUserMedia = constraints => {
+                let getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+
+                if (!getUserMedia) {
+                    return Promise.reject(new Error('getUserMedia is not implemented in this browser.'));
+                }
+
+                return new Promise( (resolve, reject) => {
+                    getUserMedia.call(navigator, constraints, resolve, reject);
+                });
+            }
+        }
         stream = await navigator.mediaDevices.getUserMedia( {video: {}} )
-        video.srcObject = stream;
+        if ("srcObject" in video) {
+            video.srcObject = stream;
+        } else {
+            video.src = window.URL.createObjectURL(stream);
+        }
         videoContEl.appendChild(video);
         togContEl.appendChild(toggle);
-        video.play();
+        video.onloadedmetadata = () => {
+            video.play();
+        }
     } catch (err) {
         console.error(err);
     }
@@ -205,10 +228,13 @@ video.addEventListener('playing', () => {
 
 function greetUser(userName, userEmotion) {
     if (video.srcObject && faceDetected) {
-        speechSynthesis.speak(new SpeechSynthesisUtterance('Hello ' + userName));
-        if (userEmotion === 'happy' || userEmotion === 'sad') {
-            speechSynthesis.speak(new SpeechSynthesisUtterance('You look '+ userEmotion));
+        const speechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (typeof speechRecognition != "undefined") {
+            speechSynthesis.speak(new SpeechSynthesisUtterance('Hello ' + userName));
+            if (userEmotion === 'happy' || userEmotion === 'sad' || userEmotion === 'angry') {
+                speechSynthesis.speak(new SpeechSynthesisUtterance('You look '+ userEmotion + 'today'));
+                speechSynthesis.speak(new SpeechSynthesisUtterance('Is there something you want to share?'));
+            } else speechSynthesis.speak(new SpeechSynthesisUtterance('How are you today?'));
         }
-        speechSynthesis.speak(new SpeechSynthesisUtterance('How are you today?'));
     }
 }
