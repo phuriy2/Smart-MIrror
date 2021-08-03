@@ -228,13 +228,35 @@ video.addEventListener('playing', () => {
 
 function greetUser(userName, userEmotion) {
     if (video.srcObject && faceDetected) {
-        const speechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (typeof speechRecognition != "undefined") {
-            speechSynthesis.speak(new SpeechSynthesisUtterance('Hello ' + userName));
-            if (userEmotion === 'happy' || userEmotion === 'sad' || userEmotion === 'angry') {
-                speechSynthesis.speak(new SpeechSynthesisUtterance('You look '+ userEmotion + 'today'));
-                speechSynthesis.speak(new SpeechSynthesisUtterance('Is there something you want to share?'));
-            } else speechSynthesis.speak(new SpeechSynthesisUtterance('How are you today?'));
-        }
+        speechSynthesis.speak(new SpeechSynthesisUtterance('Hello ' + userName));
+        if (userEmotion === 'happy' || userEmotion === 'sad' || userEmotion === 'angry') {
+            speechSynthesis.speak(new SpeechSynthesisUtterance('You look '+ userEmotion + 'today'));
+            speechSynthesis.speak(new SpeechSynthesisUtterance('Is there something you want to share?'));
+        } else speechSynthesis.speak(new SpeechSynthesisUtterance('How are you today?'));
+        // waitForResponse();
     }
 }
+
+// function waitForResponse() {
+//     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+//     if (typeof SpeechRecognition != "undefined") {
+//         const recognition = new SpeechRecognition();
+//         recognition.continuous = true;
+//         recognition.start();
+//         recognition.onresult = event => {
+//             const res = event.results[0];
+//             const text = res[0].transcript
+//             if (res.isFinal) {
+//                 console.log(text);
+//                 let textSentiment = 0;
+//                 fetch(`/mirror?text=${text}`)
+//                 .then(response => response.json())
+//                 .then(result => {
+//                     if (text.indexOf('*')!= -1) textSentiment -= 5;
+//                     textSentiment += result.score;
+//                 })
+//                 console.log(textSentiment);
+//             }
+//         }
+//     }
+// }
