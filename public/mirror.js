@@ -8,7 +8,10 @@ let faceMatcher = null;
 let faceDetected = false;
 let camOpen = false;
 let blockCalled = false;
+let listening = false;
 
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 // Video Element Setup
 const video = document.createElement('video');
@@ -216,6 +219,7 @@ video.addEventListener('playing', () => {
                             name = bestMatch.toString().split(" (")[0];
                             if (name != 'undefined' && name != 'unknown' && !faceDetected) {
                                 faceDetected = true;
+                                listening = true;
                                 greetUser(name, emotion);
                             }
                         }
@@ -226,13 +230,35 @@ video.addEventListener('playing', () => {
     }
 })
 
+function speak(str) {
+    if (typeof SpeechRecognition != "undefined") {
+        const recognition = new SpeechRecognition();
+        synthResponse = new SpeechSynthesisUtterance(str);
+        speechSynthesis.speak(synthResponse);
+
+        synthResponse.onstart = () => {
+            if (listening) {
+                recognition.stop();
+                console.log('Recognition stopped');
+            }
+        }
+
+        synthResponse.onend = () => {
+            if (listening) {
+                recognition.start();
+                console.log('Recognition started');
+            }
+        }
+    }
+}
+
 function greetUser(userName, userEmotion) {
     if (video.srcObject && faceDetected) {
-        speechSynthesis.speak(new SpeechSynthesisUtterance('Hello ' + userName));
+        speak('Hello ' + userName);
         if (userEmotion === 'happy' || userEmotion === 'sad' || userEmotion === 'angry') {
-            speechSynthesis.speak(new SpeechSynthesisUtterance('You look '+ userEmotion + 'today'));
-            speechSynthesis.speak(new SpeechSynthesisUtterance('Is there something you want to share?'));
-        } else speechSynthesis.speak(new SpeechSynthesisUtterance('How are you today?'));
+            speak('You look '+ userEmotion + 'today');
+            speak('Is there something you want to share?');
+        } else speak('How are you today?');
         // waitForResponse();
     }
 }
